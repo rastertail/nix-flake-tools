@@ -3,6 +3,7 @@
     "displayName": "Nix Flake Tools",
     "description": "Development tools for Nix Flakes-based projects",
     "version": "0.1.0",
+    "license": "GPL-3.0-or-later",
     "publisher": "rastertail",
     "repository": "https://github.com/rastertail/nix-flake-tools",
     "engines": {

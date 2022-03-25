@@ -1,0 +1,10 @@
+.vscode/**
+src/**
+result/**
+.gitignore
+**/tsconfig.json
+**/.eslintrc.json
+**/*.map
+**/*.ts
+flake.nix
+flake.lock
