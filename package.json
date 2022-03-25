@@ -15,6 +15,55 @@
         "workspaceContains:flake.nix"
     ],
     "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "nixFlakeTools.enterDevEnv",
+                "title": "Enter Development Environment",
+                "category": "Nix Flakes"
+            }
+        ],
+        "configuration": {
+            "title": "Nix Flake Tools",
+            "properties": {
+                "nixFlakeTools.nixCommand": {
+                    "type": "string",
+                    "default": "nix",
+                    "description": "Nix command to run when working with flakes"
+                },
+                "nixFlakeTools.devInstallable": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null,
+                    "description": "Nix installable to build a development environment for"
+                },
+                "nixFlakeTools.nixImpure": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether or not to pass `--impure` to Nix"
+                }
+            }
+        },
+        "icons": {
+            "nix-snowflake": {
+                "description": "Nix Snowflake",
+                "default": {
+                    "fontPath": "icons/nix-icons.woff",
+                    "fontCharacter": "\\F101"
+                }
+            }
+        },
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "nixFlakeTools.enterDevEnv",
+                    "when": "nixFlakeTools.nixFound"
+                }
+            ]
+        }
+    },
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
@@ -22,11 +71,16 @@
         "watch": "tsc -watch -p ./"
     },
     "devDependencies": {
+        "@types/chrome-remote-interface": "^0.31",
+        "@types/command-exists": "^1",
         "@types/node": "^12",
         "@types/vscode": "^1",
         "@typescript-eslint/eslint-plugin": "^4",
         "@typescript-eslint/parser": "^4",
+        "chrome-remote-interface": "^0.31",
+        "command-exists": "^1",
         "eslint": "^7",
-        "typescript": "^4"
+        "typescript": "^4",
+        "vsce": "^2"
     }
 }
