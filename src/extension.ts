@@ -1,7 +1,7 @@
 import * as child from "child_process";
 
-import * as commandExists from "command-exists";
-import * as cdp from "chrome-remote-interface";
+import commandExists from "command-exists";
+import cdp from "chrome-remote-interface";
 import * as vscode from "vscode";
 
 async function injectEnvironment(vars: Map<string, string>) {

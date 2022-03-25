@@ -1,6 +1,7 @@
 .vscode/**
 src/**
 result/**
+out/**
 .gitignore
 **/tsconfig.json
 **/.eslintrc.json
