@@ -151,13 +151,23 @@ export async function activate(ctx: vscode.ExtensionContext) {
         const flakeDir = flakeFile.substring(0, flakeFile.length - 9);
 
         // Set up arguments
-        const args = ["--log-format", "internal-json", "develop", "-c", "env"];
-        if (nixImpure) {
+        const args = ["--log-format", "internal-json", "develop"];
+        if (allowUnfree || allowBroken || allowUnsupported || allowInsecure) {
             args.push("--impure");
         }
         if (developInstallable != undefined) {
             args.push(developInstallable);
         }
+        args.push("-c", "env");
+
+        // Set up environment variables
+        const envProcEnv = {
+            PATH: process.env["PATH"],
+            NIXPKGS_ALLOW_UNFREE: allowUnfree ? "1" : "0",
+            NIXPKGS_ALLOW_BROKEN: allowBroken ? "1" : "0",
+            NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM: allowUnsupported ? "1" : "0",
+            NIXPKGS_ALLOW_INSECURE: allowInsecure ? "1" : "0",
+        };
 
         // Update status bar
         statusBarItem.text = "$(loading~spin) Building Nix environment...";
@@ -165,7 +175,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
         // Run Nix command in a clean environment and record changed variables
         let vars = new Map();
-        const envProc = child.spawn(nixCommand, args, { cwd: flakeDir, env: { PATH: process.env["PATH"] } });
+        const envProc = child.spawn(nixCommand, args, { cwd: flakeDir, env: envProcEnv });
         envProc.stdout.on("data", (data: Buffer) => {
             for (const line of data.toString().split('\n')) {
                 const eq = line.indexOf("=");

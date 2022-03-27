@@ -40,10 +40,25 @@
                     "default": null,
                     "description": "Nix installable to build a development environment for"
                 },
-                "nixFlakeTools.nixImpure": {
+                "nixFlakeTools.allowUnfree": {
                     "type": "boolean",
                     "default": false,
-                    "description": "Whether or not to pass `--impure` to Nix"
+                    "description": "Whether or not to allow Nix to build unfree packages"
+                },
+                "nixFlakeTools.allowBroken": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether or not to allow Nix to build broken packages"
+                },
+                "nixFlakeTools.allowUnsupported": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether or not to allow Nix to build packages unsupported on your system"
+                },
+                "nixFlakeTools.allowInsecure": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether or not to allow Nix to build insecure packages"
                 }
             }
         },
