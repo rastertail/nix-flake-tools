@@ -5,6 +5,8 @@ out/**
 .gitignore
 **/tsconfig.json
 **/.eslintrc.json
+**/.prettierrc.json
+**/.prettierignore
 **/*.map
 **/*.ts
 flake.nix
