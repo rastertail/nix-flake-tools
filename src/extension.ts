@@ -320,10 +320,15 @@ export async function activate(ctx: vscode.ExtensionContext) {
             }
         }, 100);
 
-        envProc.on("close", async _code => {
-            // Stop updating progress
-            clearTimeout(progressUpdater);
+        // Wait for process to finish
+        const status = await new Promise((resolve, _reject) => {
+            envProc.on("close", resolve);
+        });
 
+        // Stop updating progress
+        clearTimeout(progressUpdater);
+
+        if (status == 0) {
             // Update status bar
             statusBarItem.text = "$(loading~spin) Injecting Nix environment...";
 
@@ -332,6 +337,10 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
             // Update status bar
             statusBarItem.text = "$(refresh) Nix environment pending reload";
-        });
+        } else {
+            // Update status bar and alert user
+            statusBarItem.text = "$(error) Nix environment failed";
+            vscode.window.showErrorMessage(`Nix returned non-zero status code (${status})`);
+        }
     }));
 }
