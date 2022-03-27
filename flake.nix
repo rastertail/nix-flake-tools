@@ -13,28 +13,26 @@
         pkgs = import nixpkgs { inherit system; };
         npmlock2nix = import npmlock2nix-repo { inherit pkgs; };
       in rec {
-        packages.nix-flake-tools = let
-          vsix = npmlock2nix.build {
-            nodejs = pkgs.nodejs-14_x;
-            src = ./.;
+        packages.vsix = npmlock2nix.build {
+          nodejs = pkgs.nodejs-14_x;
+          src = ./.;
 
-            node_modules_attrs = {
-              nativeBuildInputs = [ pkgs.python3 pkgs.pkg-config pkgs.libsecret ];
-            };
+          node_modules_attrs = {
+            nativeBuildInputs = [ pkgs.python3 pkgs.pkg-config pkgs.libsecret ];
+          };
 
-            buildCommands = [ "env" "npx vsce package -o $name.zip" ];
-            installPhase = ''
-              mkdir $out
-              cp $name.zip $out/
-            '';
-          };
-        in
-          pkgs.vscode-utils.buildVscodeExtension {
-            name = vsix.name;
-            src = "${vsix}/${vsix.name}.zip";
-            vscodeExtUniqueId = "rastertail.nix-flake-tools";
-          };
-        defaultPackage = packages.nix-flake-tools;
+          buildCommands = [ "env" "npx vsce package -o $name.zip" ];
+          installPhase = ''
+            mkdir $out
+            cp $name.zip $out/
+          '';
+        };
+        packages.extension = pkgs.vscode-utils.buildVscodeExtension {
+          name = packages.vsix.name;
+          src = "${packages.vsix}/${packages.vsix.name}.zip";
+          vscodeExtUniqueId = "rastertail.nix-flake-tools";
+        };
+        defaultPackage = packages.extension;
 
         devShell = pkgs.mkShell {
           buildInputs = [ pkgs.nodejs-14_x ];
