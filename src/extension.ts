@@ -86,7 +86,7 @@ async function injectEnvironment(vars: Map<string, string>) {
     // Potentially restore old environment, otherwise save old environment
     await dbg.Runtime.evaluate({
         expression: `
-        if (oldEnv != undefined) {
+        if (typeof oldEnv !== "undefined") {
             process.env = oldEnv;
         } else {
             oldEnv = Object.assign({}, process.env);
