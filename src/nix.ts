@@ -28,24 +28,24 @@ export enum ResultType {
 }
 
 export interface LogAction {
-    level: number,
-    msg: string,
+    level: number;
+    msg: string;
 }
 
 export interface StartAction {
-    id: number,
-    level: number,
-    type: ActivityType,
-    text: string,
-    fields: any,
+    id: number;
+    level: number;
+    type: ActivityType;
+    text: string;
+    fields: any;
 }
 
 export interface StopAction {
-    id: number,
+    id: number;
 }
 
 export interface ResultAction {
-    id: number,
-    type: ResultType,
-    fields: any,
+    id: number;
+    type: ResultType;
+    fields: any;
 }

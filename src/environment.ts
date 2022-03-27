@@ -20,15 +20,18 @@ export async function injectEnvironment(vars: Map<string, string>) {
             Object.assign(process.env, oldEnv);
         }
         oldEnv = Object.assign({}, process.env);
-    ` });
+    `,
+    });
 
     // Apply environment variables
     for (const [name, value] of vars) {
         // Escape quotes and backslashes in variable values
         value.replace(/\\/g, "\\\\");
-        value.replace(/"/g, "\\\"");
+        value.replace(/"/g, '\\"');
 
-        await dbg.Runtime.evaluate({ expression: `process.env["${name}"] = "${value}";` });
+        await dbg.Runtime.evaluate({
+            expression: `process.env["${name}"] = "${value}";`,
+        });
     }
 
     // Close debugger

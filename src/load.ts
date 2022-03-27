@@ -7,13 +7,13 @@ import * as nix from "./nix";
 import { leftTruncate } from "./util";
 
 interface ActivityProgress {
-    done: number,
-    expected: number,
+    done: number;
+    expected: number;
 }
 
 interface DisplayString {
-    s: string,
-    level: number,
+    s: string;
+    level: number;
 }
 
 export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
@@ -27,7 +27,10 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
     const allowInsecure = config.get("allowInsecure", false);
 
     // Get flake paths
-    const flakeFiles = (await vscode.workspace.findFiles("flake.nix", "")).map(uri => uri.fsPath);
+    // TODO Handle none (user removed flake from workspace)
+    const flakeFiles = (await vscode.workspace.findFiles("flake.nix", "")).map(
+        (uri) => uri.fsPath
+    );
 
     // Pick flake file from multiple if necessary
     let flakeFile = flakeFiles[0];
@@ -70,9 +73,12 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
 
     // Run Nix command in a clean environment and record changed variables
     let vars = new Map<string, string>();
-    const envProc = child.spawn(nixCommand, args, { cwd: flakeDir, env: envProcEnv });
+    const envProc = child.spawn(nixCommand, args, {
+        cwd: flakeDir,
+        env: envProcEnv,
+    });
     envProc.stdout.on("data", (data: Buffer) => {
-        for (const line of data.toString().split('\n')) {
+        for (const line of data.toString().split("\n")) {
             const eq = line.indexOf("=");
             vars.set(line.substring(0, eq), line.substring(eq + 1));
         }
@@ -90,7 +96,10 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
     const activityStrings = new Map<number, DisplayString>();
     let displayId = -1;
     envProc.stderr.on("data", (data: Buffer) => {
-        for (const line of data.toString().split('\n').filter(s => s.startsWith("@nix "))) {
+        for (const line of data
+            .toString()
+            .split("\n")
+            .filter((s) => s.startsWith("@nix "))) {
             const rawAction: any = JSON.parse(line.substring(5));
             switch (rawAction.action) {
                 // Show popups for errors
@@ -109,7 +118,8 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
                     // Create message string for relevant activities
                     let msg: string | undefined;
                     if (action.type == nix.ActivityType.FileTransfer) {
-                        msg = "Downloading " + leftTruncate(action.fields[0], 24);
+                        msg =
+                            "Downloading " + leftTruncate(action.fields[0], 24);
                     } else if (action.type == nix.ActivityType.CopyPath) {
                         msg = "Fetching " + leftTruncate(action.fields[0], 24);
                     } else if (action.type == nix.ActivityType.Build) {
@@ -118,16 +128,25 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
 
                     // Update activity strings and display ID
                     if (msg != undefined) {
-                        activityStrings.set(action.id, { s: msg, level: action.level });
+                        activityStrings.set(action.id, {
+                            s: msg,
+                            level: action.level,
+                        });
 
                         const displayed = activityStrings.get(displayId);
-                        if (displayed == undefined || action.level <= displayed.level) {
+                        if (
+                            displayed == undefined ||
+                            action.level <= displayed.level
+                        ) {
                             displayId = action.id;
                         }
                     }
 
                     // Start tracking `Builds` and `CopyPaths` activities
-                    if (action.type == nix.ActivityType.Builds || action.type == nix.ActivityType.CopyPaths) {
+                    if (
+                        action.type == nix.ActivityType.Builds ||
+                        action.type == nix.ActivityType.CopyPaths
+                    ) {
                         progress.activities.set(action.id, {
                             done: 0,
                             expected: 0,
@@ -173,7 +192,11 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
                     // TODO Filter by result type?
                     const str = activityStrings.get(action.id);
                     const displayStr = activityStrings.get(displayId);
-                    if (str != undefined && (displayStr == undefined || str.level <= displayStr.level)) {
+                    if (
+                        str != undefined &&
+                        (displayStr == undefined ||
+                            str.level <= displayStr.level)
+                    ) {
                         displayId = action.id;
                     }
 
@@ -234,6 +257,8 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
     } else {
         // Update status bar and alert user
         statusBarItem.text = "$(error) Nix environment failed";
-        vscode.window.showErrorMessage(`Nix returned non-zero status code (${status})`);
+        vscode.window.showErrorMessage(
+            `Nix returned non-zero status code (${status})`
+        );
     }
 }
