@@ -19,8 +19,8 @@
     "contributes": {
         "commands": [
             {
-                "command": "nixFlakeTools.enterDevEnv",
-                "title": "Enter Development Environment",
+                "command": "nixFlakeTools.loadDevEnv",
+                "title": "Load Development Environment",
                 "category": "Nix Flakes"
             }
         ],
@@ -74,7 +74,7 @@
         "menus": {
             "commandPalette": [
                 {
-                    "command": "nixFlakeTools.enterDevEnv",
+                    "command": "nixFlakeTools.loadDevEnv",
                     "when": "nixFlakeTools.nixFound"
                 }
             ]
