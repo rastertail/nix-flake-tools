@@ -254,6 +254,13 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
 
         // Update status bar
         statusBarItem.text = "$(refresh) Nix environment pending reload";
+
+        // Update context
+        vscode.commands.executeCommand(
+            "setContext",
+            "nixFlakeTools.inManagedEnv",
+            true
+        );
     } else {
         // Update status bar and alert user
         statusBarItem.text = "$(error) Nix environment failed";

@@ -22,6 +22,11 @@
                 "command": "nixFlakeTools.loadDevEnv",
                 "title": "Load Development Environment",
                 "category": "Nix Flakes"
+            },
+            {
+                "command": "nixFlakeTools.restoreEnv",
+                "title": "Restore Original Editor Environment",
+                "category": "Nix Flakes"
             }
         ],
         "configuration": {
@@ -81,6 +86,10 @@
                 {
                     "command": "nixFlakeTools.loadDevEnv",
                     "when": "nixFlakeTools.nixFound"
+                },
+                {
+                    "command": "nixFlakeTools.restoreEnv",
+                    "when": "nixFlakeTools.inManagedEnv"
                 }
             ]
         }

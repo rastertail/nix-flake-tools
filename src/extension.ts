@@ -1,6 +1,7 @@
 import commandExists from "command-exists";
 import * as vscode from "vscode";
 
+import { restoreEnvironment } from "./environment";
 import { loadEnvironment } from "./load";
 
 export async function activate(ctx: vscode.ExtensionContext) {
@@ -43,12 +44,38 @@ export async function activate(ctx: vscode.ExtensionContext) {
         statusBarItem.show();
     }
 
+    // Set context if we are in a managed flake environment
+    vscode.commands.executeCommand(
+        "setContext",
+        "nixFlakeTools.inManagedEnv",
+        inFlakeEnv
+    );
+
     // Register commands
     ctx.subscriptions.push(
         vscode.commands.registerCommand(
             "nixFlakeTools.loadDevEnv",
             async () => {
                 await loadEnvironment(statusBarItem);
+            }
+        )
+    );
+    ctx.subscriptions.push(
+        vscode.commands.registerCommand(
+            "nixFlakeTools.restoreEnv",
+            async () => {
+                // Restore environment
+                statusBarItem.text = "$(loading~spin) Restoring environment...";
+                await restoreEnvironment();
+                statusBarItem.text =
+                    "$(refresh) Nix environment pending reload";
+
+                // Update context
+                vscode.commands.executeCommand(
+                    "setContext",
+                    "nixFlakeTools.inManagedEnv",
+                    false
+                );
             }
         )
     );
