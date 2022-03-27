@@ -96,13 +96,9 @@ async function injectEnvironment(vars: Map<string, string>) {
 }
 
 export async function activate(ctx: vscode.ExtensionContext) {
-    // Get extension configuration
-    const config = vscode.workspace.getConfiguration("nixFlakeTools");
-
-    // Read specific configuration options
-    const nixCommand = config.get("nixCommand", "nix");
-    const developInstallable = config.get<string>("devInstallable");
-    const nixImpure = config.get("nixImpure", false);
+    // Get configured Nix command
+    const nixCommand = vscode.workspace.getConfiguration("nixFlakeTools")
+        .get("nixCommand", "nix");
 
     // Check if the configured Nix command exists and update context
     const nixFound = await commandExists(nixCommand)
@@ -134,6 +130,14 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
     // Register commands
     ctx.subscriptions.push(vscode.commands.registerCommand("nixFlakeTools.enterDevEnv", async () => {
+        // Load configuration options
+        const config = vscode.workspace.getConfiguration("nixFlakeTools");
+        const developInstallable = config.get<string>("devInstallable");
+        const allowUnfree = config.get("allowUnfree", false);
+        const allowBroken = config.get("allowBroken", false);
+        const allowUnsupported = config.get("allowUnsupported", false);
+        const allowInsecure = config.get("allowInsecure", false);
+
         // Pick flake file from multiple if necessary
         let flakeFile = flakeFiles[0];
         if (flakeFiles.length > 1) {
@@ -294,7 +298,10 @@ export async function activate(ctx: vscode.ExtensionContext) {
                     }
                 }
             }
+        });
 
+        // Only update status bar every 100ms
+        const progressUpdater = setInterval(() => {
             // Tally up total done and expected activities
             let totalDone = progress.done;
             let totalExpected = progress.expected;
@@ -311,9 +318,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
             } else {
                 statusBarItem.text = `$(loading~spin) (${totalDone}/${totalExpected}) Building Nix environment...`;
             }
-        });
+        }, 100);
 
         envProc.on("close", async _code => {
+            // Stop updating progress
+            clearTimeout(progressUpdater);
+
             // Update status bar
             statusBarItem.text = "$(loading~spin) Injecting Nix environment...";
 
