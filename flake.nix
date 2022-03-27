@@ -21,7 +21,7 @@
             nativeBuildInputs = [ pkgs.python3 pkgs.pkg-config pkgs.libsecret ];
           };
 
-          buildCommands = [ "env" "npx vsce package -o $name.zip" ];
+          buildCommands = [ "npx vsce package -o $name.zip" ];
           installPhase = ''
             mkdir $out
             cp $name.zip $out/
