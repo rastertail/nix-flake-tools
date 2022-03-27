@@ -5,9 +5,8 @@ import { loadEnvironment } from "./load";
 
 export async function activate(ctx: vscode.ExtensionContext) {
     // Get configured Nix command
-    const nixCommand = vscode.workspace
-        .getConfiguration("nixFlakeTools")
-        .get("nixCommand", "nix");
+    const config = vscode.workspace.getConfiguration("nixFlakeTools");
+    const nixCommand = config.get("nixCommand", "nix");
 
     // Check if the configured Nix command exists and update context
     const nixFound = await commandExists(nixCommand)
@@ -33,7 +32,9 @@ export async function activate(ctx: vscode.ExtensionContext) {
     const statusBarItem = vscode.window.createStatusBarItem(
         vscode.StatusBarAlignment.Left
     );
-    if (process.env["VSCODE_IN_FLAKE_ENV"] != undefined) {
+
+    const inFlakeEnv = process.env["VSCODE_IN_FLAKE_ENV"];
+    if (inFlakeEnv != undefined) {
         statusBarItem.text = "$(nix-snowflake) Nix environment active";
         statusBarItem.show();
     } else if (process.env["IN_NIX_SHELL"] != undefined) {
@@ -51,4 +52,20 @@ export async function activate(ctx: vscode.ExtensionContext) {
             }
         )
     );
+
+    // Ask the user if they want to enter the current flake environment
+    if (inFlakeEnv == undefined && config.get("askToLoadFlakeEnv", true)) {
+        const action = await vscode.window.showInformationMessage(
+            "Enter the development environment for this workspace's Nix flake?",
+            "Yes",
+            "No",
+            "Don't Ask Again"
+        );
+
+        if (action == "Yes") {
+            vscode.commands.executeCommand("nixFlakeTools.loadDevEnv");
+        } else if (action == "Don't Ask Again") {
+            config.update("askToLoadFlakeEnv", false, true);
+        }
+    }
 }

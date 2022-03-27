@@ -59,6 +59,11 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Whether or not to allow Nix to build insecure packages"
+                },
+                "nixFlakeTools.askToLoadFlakeEnv": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Whether or not the extension should automatically prompt to load the current flake environment"
                 }
             }
         },
