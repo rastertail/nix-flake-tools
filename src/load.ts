@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 
 import { injectEnvironment } from "./environment";
 import * as nix from "./nix";
-import { leftTruncate } from "./util";
+import { leftTruncate, promptReload } from "./util";
 
 interface ActivityProgress {
     done: number;
@@ -252,15 +252,15 @@ export async function loadEnvironment(statusBarItem: vscode.StatusBarItem) {
         // Inject environment variables
         await injectEnvironment(vars);
 
-        // Update status bar
-        statusBarItem.text = "$(refresh) Nix environment pending reload";
-
         // Update context
         vscode.commands.executeCommand(
             "setContext",
             "nixFlakeTools.inManagedEnv",
             true
         );
+
+        // Prompt reload
+        await promptReload(statusBarItem);
     } else {
         // Update status bar and alert user
         statusBarItem.text = "$(error) Nix environment failed";

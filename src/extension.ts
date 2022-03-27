@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 
 import { restoreEnvironment } from "./environment";
 import { loadEnvironment } from "./load";
+import { promptReload } from "./util";
 
 export async function activate(ctx: vscode.ExtensionContext) {
     // Get configured Nix command
@@ -67,8 +68,6 @@ export async function activate(ctx: vscode.ExtensionContext) {
                 // Restore environment
                 statusBarItem.text = "$(loading~spin) Restoring environment...";
                 await restoreEnvironment();
-                statusBarItem.text =
-                    "$(refresh) Nix environment pending reload";
 
                 // Update context
                 vscode.commands.executeCommand(
@@ -76,6 +75,9 @@ export async function activate(ctx: vscode.ExtensionContext) {
                     "nixFlakeTools.inManagedEnv",
                     false
                 );
+
+                // Prompt reload
+                promptReload(statusBarItem);
             }
         )
     );

@@ -17,14 +17,14 @@ export async function injectEnvironment(vars: Map<string, string>) {
     // Potentially restore old environment and save old environment
     await dbg.Runtime.evaluate({
         expression: `
-        if (typeof oldEnv !== "undefined") {
-            for (const name in process.env) {
-                delete process.env[name];
+            if (typeof oldEnv !== "undefined") {
+                for (const name in process.env) {
+                    delete process.env[name];
+                }
+                Object.assign(process.env, oldEnv);
             }
-            Object.assign(process.env, oldEnv);
-        }
-        oldEnv = Object.assign({}, process.env);
-    `,
+            oldEnv = Object.assign({}, process.env);
+        `,
     });
 
     // Apply environment variables
@@ -49,13 +49,13 @@ export async function restoreEnvironment() {
     // Potentially restore old environment
     await dbg.Runtime.evaluate({
         expression: `
-        if (typeof oldEnv !== "undefined") {
-            for (const name in process.env) {
-                delete process.env[name];
+            if (typeof oldEnv !== "undefined") {
+                for (const name in process.env) {
+                    delete process.env[name];
+                }
+                Object.assign(process.env, oldEnv);
             }
-            Object.assign(process.env, oldEnv);
-        }
-    `,
+        `,
     });
 
     // Close debugger
