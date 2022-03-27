@@ -74,8 +74,8 @@ interface DisplayString {
 }
 
 async function injectEnvironment(vars: Map<string, string>) {
-    // Assume parent process is the root VSCode process
-    const rootProc = process.ppid;
+    // Get root process from environment (thanks!)
+    const rootProc = parseInt(process.env["VSCODE_PID"]!);
 
     // Start debug session on the root process
     (process as any)._debugProcess(rootProc);
@@ -83,10 +83,21 @@ async function injectEnvironment(vars: Map<string, string>) {
     // Connect debugger
     const dbg = await cdp({ host: "127.0.0.1", port: 9229 });
 
+    // Potentially restore old environment, otherwise save old environment
+    await dbg.Runtime.evaluate({
+        expression: `
+        if (oldEnv != undefined) {
+            process.env = oldEnv;
+        } else {
+            oldEnv = Object.assign({}, process.env);
+        }
+    ` });
+
     // Apply environment variables
     for (const [name, value] of vars) {
-        // Escape quotes in variable values
-        value.replace(/"/g, '\\"');
+        // Escape quotes and backslashes in variable values
+        value.replace(/\\/g, "\\\\");
+        value.replace(/"/g, "\\\"");
 
         await dbg.Runtime.evaluate({ expression: `process.env["${name}"] = "${value}";` });
     }
@@ -120,8 +131,11 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
     // Create status bar item, potentially setting content
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    if (process.env["IN_NIX_SHELL"] != undefined) {
+    if (process.env["VSCODE_IN_FLAKE_ENV"] != undefined) {
         statusBarItem.text = "$(nix-snowflake) Nix environment active";
+        statusBarItem.show();
+    } else if (process.env["IN_NIX_SHELL"] != undefined) {
+        statusBarItem.text = "$(nix-snowflake) Nix environment active (external)";
         statusBarItem.show();
     }
 
@@ -178,7 +192,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
         statusBarItem.show();
 
         // Run Nix command in a clean environment and record changed variables
-        let vars = new Map();
+        let vars = new Map<string, string>();
         const envProc = child.spawn(nixCommand, args, { cwd: flakeDir, env: envProcEnv });
         envProc.stdout.on("data", (data: Buffer) => {
             for (const line of data.toString().split('\n')) {
@@ -186,6 +200,9 @@ export async function activate(ctx: vscode.ExtensionContext) {
                 vars.set(line.substring(0, eq), line.substring(eq + 1));
             }
         });
+
+        // Add special variable to remember that we are in a VS Code managed environment
+        vars.set("VSCODE_IN_FLAKE_ENV", "1");
 
         // Log progress
         const progress = {
